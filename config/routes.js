@@ -1,15 +1,57 @@
 const axios = require("axios");
+const bcrypt = require("bcryptjs");
 
-const { authenticate } = require("../auth/authenticate");
+const Users = require("./user-model.js");
+
+const { authenticate, generateToken } = require("../auth/authenticate");
 
 module.exports = server => {
   server.post("/api/register", register);
   server.post("/api/login", login);
   server.get("/api/jokes", authenticate, getJokes);
+  server.get("/", users);
 };
+
+function users(req, res) {
+  Users.find()
+    .then(users => {
+      res.json(users);
+    })
+    .catch(err => res.send(err));
+}
 
 function register(req, res) {
   // implement user registration
+  const user = req.body;
+  console.log(req.body);
+
+  if (!user.username || !user.password) {
+    console.log("username", user.username, "password", user.password);
+    res.status(400).json({
+      errorMessage: "Please provide an username and a password."
+    });
+  } else {
+    //generate hash from user's password
+    const hash = bcrypt.hashSync(user.password, 12); //2 ^ n times
+
+    //override user.password with hash
+    user.password = hash;
+
+    //Create token with user info - Login the user when registering
+    const token = generateToken(user);
+
+    // Add user to database and send back response, with token info
+    Users.add(user)
+      .then(userId => {
+        res.status(201).json({ userId: userId, token: token });
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).json({
+          errorMessage: "There was an error saving the new user to the database"
+        });
+      });
+  }
 }
 
 function login(req, res) {
