@@ -63,6 +63,7 @@ function login(req, res) {
       errorMessage: "Please provide a username, and password."
     });
   } else {
+    console.log("LOGIN username", username);
     Users.find({ username }) // Check username exists in database
       .first()
       .then(user => {

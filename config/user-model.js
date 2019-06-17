@@ -10,6 +10,6 @@ async function add(user) {
   return id;
 }
 
-function find() {
-  return db("users").select("id", "username", "password");
+function find(condition) {
+  return db("users").where(condition);
 }
