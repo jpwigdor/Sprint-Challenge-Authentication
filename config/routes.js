@@ -28,7 +28,7 @@ function register(req, res) {
   if (!user.username || !user.password) {
     console.log("username", user.username, "password", user.password);
     res.status(400).json({
-      errorMessage: "Please provide an username and a password."
+      errorMessage: "Please provide a username and a password."
     });
   } else {
     //generate hash from user's password
@@ -56,6 +56,33 @@ function register(req, res) {
 
 function login(req, res) {
   // implement user login
+  let { username, password } = req.body;
+
+  if (!username || !password) {
+    res.status(400).json({
+      errorMessage: "Please provide a username, and password."
+    });
+  } else {
+    Users.find({ username }) // Check username exists in database
+      .first()
+      .then(user => {
+        // Check that user exists and password & hashed password are correct
+        if (user && bcrypt.compareSync(password, user.password)) {
+          const token = generateToken(user); // Create token because user is valid
+          res
+            .status(200)
+            .json({ message: `Welcome ${user.username}!`, token: token }); // Send token to client
+        } else {
+          res.status(400).json({ errorMessage: "Invalid Credentials" });
+        }
+      })
+      .catch(error => {
+        console.log(err);
+        res.status(500).json({
+          errorMessage: "There was an error logging user"
+        });
+      });
+  }
 }
 
 function getJokes(req, res) {
