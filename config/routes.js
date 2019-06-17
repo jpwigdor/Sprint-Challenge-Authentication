@@ -13,7 +13,7 @@ module.exports = server => {
 };
 
 function users(req, res) {
-  Users.find()
+  Users.findAll()
     .then(users => {
       res.json(users);
     })
@@ -23,10 +23,8 @@ function users(req, res) {
 function register(req, res) {
   // implement user registration
   const user = req.body;
-  console.log(req.body);
 
   if (!user.username || !user.password) {
-    console.log("username", user.username, "password", user.password);
     res.status(400).json({
       errorMessage: "Please provide a username and a password."
     });
@@ -63,7 +61,6 @@ function login(req, res) {
       errorMessage: "Please provide a username, and password."
     });
   } else {
-    console.log("LOGIN username", username);
     Users.find({ username }) // Check username exists in database
       .first()
       .then(user => {
@@ -78,7 +75,7 @@ function login(req, res) {
         }
       })
       .catch(error => {
-        console.log(err);
+        console.log(error);
         res.status(500).json({
           errorMessage: "There was an error logging user"
         });
